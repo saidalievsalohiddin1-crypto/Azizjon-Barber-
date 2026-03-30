@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azizjon Barber Premium</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #C9A84C; --dark: #0A0A0A; --gray: #1A1A1A; }
+        body { font-family: 'DM Sans', sans-serif; background-color: var(--dark); color: #F5EDD8; user-select: none; }
+        .font-bebas { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.05em; }
+        
+        /* Animatsiyalar va Effektlar */
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border: 1px solid rgba(201, 168, 76, 0.2); border-radius: 24px; transition: all 0.3s ease; }
+        .glass-card:active { transform: scale(0.98); border-color: var(--gold); }
+        .page-content { display: none; animation: slideUp 0.4s ease-out forwards; }
+        .page-content.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Vaqtlar va Kalendar */
+        .time-slot { border: 1px solid rgba(201, 168, 76, 0.3); transition: all 0.2s; cursor: pointer; position: relative; overflow: hidden; }
+        .time-slot.selected { background: var(--gold) !important; color: black !important; font-weight: bold; border-color: white; box-shadow: 0 0 15px rgba(201, 168, 76, 0.5); }
+        .time-slot.booked { background: #222; opacity: 0.4; text-decoration: line-through; cursor: not-allowed; border-color: #333; }
+        .day-btn { min-width: 70px; height: 90px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; transition: 0.3s; }
+        .day-btn.active { background: var(--gold); color: black; border-color: var(--gold); transform: translateY(-5px); font-weight: bold; }
+
+        /* Modal */
+        #modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
+        .modal-box { width: 100%; max-width: 320px; text-align: center; border: 2px solid var(--gold); box-shadow: 0 0 30px rgba(201, 168, 76, 0.2); }
+        
+        .gold-gradient-text { background: linear-gradient(to right, #C9A84C, #F5EDD8, #C9A84C); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        ::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="pb-28">
+
+    <div id="modal-overlay">
+        <div class="modal-box glass-card p-8">
+            <div id="modal-icon" class="mb-4 text-4xl text-[#C9A84C]"></div>
+            <h3 id="modal-title" class="text-3xl font-bebas mb-2 tracking-widest text-[#C9A84C]"></h3>
+            <div id="modal-text" class="text-sm text-gray-400 mb-8 leading-relaxed"></div>
+            <div id="modal-actions" class="flex gap-3"></div>
+        </div>
+    </div>
+
+    <div id="app" class="max-w-md mx-auto px-6 pt-12">
+
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <p class="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold">Welcome to</p>
+                <h1 class="text-4xl font-bebas leading-none gold-gradient-text">AZIZJON STUDIO</h1>
+            </div>
+            <div class="w-12 h-12 glass-card flex items-center justify-center border-none bg-white/5">
+                <i class="fa-solid fa-bell text-[#C9A84C]"></i>
+            </div>
+        </div>
+
+        <section id="home" class="page-content active">
+            <div class="glass-card p-2 mb-8 overflow-hidden relative">
+                <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=500" class="w-full h-48 object-cover rounded-2xl opacity-60">
+                <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div>
+                <div class="absolute bottom-6 left-6">
+                    <span class="bg-[#C9A84C] text-black text-[9px] px-2 py-1 rounded-md font-bold uppercase mb-2 inline-block">Special Offer</span>
+                    <h2 class="text-2xl font-bebas text-white">Eng yaxshi uslub - Azizjondan</h2>
+                </div>
+            </div>
+
+            <div id="sub-checker" class="glass-card p-6 mb-8 bg-[#C9A84C]/5 border-[#C9A84C]/40">
+                <div class="flex items-center gap-4 mb-4">
+                    <i class="fa-brands fa-telegram text-4xl text-[#26A5E4]"></i>
+                    <div>
+                        <h4 class="font-bold text-sm">TELEGRAM KANAL</h4>
+                        <p class="text-[10px] text-gray-400 uppercase">Obuna bo'lmasangiz navbat yopiq</p>
+                    </div>
+                </div>
+                <a href="https://t.me/aziz_barber_studio" onclick="setSub()" target="_blank" class="block w-full bg-[#26A5E4] text-white py-4 rounded-xl text-center font-bold text-xs uppercase shadow-lg shadow-blue-500/20">KANALGA KIRISH</a>
+            </div>
+
+            <button onclick="checkBookingAccess()" class="w-full h-20 glass-card flex items-center justify-center gap-4 border-2 border-[#C9A84C]/30 hover:border-[#C9A84C]">
+                <i class="fa-solid fa-calendar-check text-2xl text-[#C9A84C]"></i>
+                <span class="text-lg font-bebas tracking-[0.1em]">NAVOBATGA YOZILISH</span>
+            </button>
+        </section>
+
+        <section id="booking" class="page-content">
+            <div id="booking-s1">
+                <h2 class="text-3xl font-bebas mb-6 gold-gradient-text">Xizmat turini tanlang</h2>
+                <div class="grid grid-cols-1 gap-4 mb-8">
+                    <div class="glass-card p-6 flex justify-between items-center" onclick="selectService('Soch', 25)">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-[#C9A84C]/10 rounded-full flex items-center justify-center text-[#C9A84C]"><i class="fa-solid fa-cut"></i></div>
+                            <div><p class="font-bold">SOCH OLISH</p><p class="text-[10px] text-gray-500 uppercase">Premium haircut</p></div>
+                        </div>
+                        <span class="font-bebas text-2xl text-[#C9A84C]">25 MIN</span>
+                    </div>
+                    <div class="glass-card p-6 flex justify-between items-center" onclick="selectService('Soqol', 25)">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-[#C9A84C]/10 rounded-full flex items-center justify-center text-[#C9A84C]"><i class="fa-solid fa-user-tie"></i></div>
+                            <div><p class="font-bold">SOQOL SHAKLI</p><p class="text-[10px] text-gray-500 uppercase">Beard trim & shape</p></div>
+                        </div>
+                        <span class="font-bebas text-2xl text-[#C9A84C]">25 MIN</span>
+                    </div>
+                    <div class="glass-card p-6 flex justify-between items-center border-[#C9A84C]" onclick="selectService('VIP', 50)">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-[#C9A84C] rounded-full flex items-center justify-center text-black shadow-lg shadow-[#C9A84C]/40"><i class="fa-solid fa-crown"></i></div>
+                            <div><p class="font-bold">VIP PAKET</p><p class="text-[10px] text-gray-500 uppercase">Hamma xizmatlar birga</p></div>
+                        </div>
+                        <span class="font-bebas text-2xl text-[#C9A84C]">50 MIN</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="booking-s2" class="hidden">
+                <div class="flex items-center gap-4 mb-6">
+                    <button onclick="backToS1()" class="w-10 h-10 glass-card flex items-center justify-center"><i class="fa-solid fa-chevron-left"></i></button>
+                    <h2 id="service-title" class="text-3xl font-bebas gold-gradient-text uppercase">VAQTNI TANLANG</h2>
+                </div>
+
+                <div class="mb-8">
+                    <p class="text-[10px] font-bold text-gray-500 uppercase mb-4 tracking-widest">Sana tanlang</p>
+                    <div class="flex gap-4 overflow-x-auto pb-4" id="calendar-strip"></div>
+                </div>
+
+                <div class="mb-8">
+                    <p class="text-[10px] font-bold text-gray-500 uppercase mb-4 tracking-widest">Bo'sh vaqtlar</p>
+                    <div class="grid grid-cols-3 gap-3" id="time-grid"></div>
+                </div>
+
+                <div class="mb-8">
+                    <p class="text-[10px] font-bold text-gray-500 uppercase mb-4 tracking-widest">Ma'lumotlaringiz</p>
+                    <input type="text" id="user-name-input" placeholder="Ismingiz" class="w-full glass-card p-4 mb-3 bg-transparent border border-[#C9A84C]/30 focus:border-[#C9A84C] outline-none text-[#F5EDD8] rounded-xl placeholder-gray-600 transition-all">
+                    <input type="tel" id="user-phone-input" placeholder="Telefon (+998...)" class="w-full glass-card p-4 bg-transparent border border-[#C9A84C]/30 focus:border-[#C9A84C] outline-none text-[#F5EDD8] rounded-xl placeholder-gray-600 transition-all">
+                </div>
+
+                <button onclick="finalProcess()" class="w-full bg-[#C9A84C] text-black py-5 rounded-2xl font-bold font-bebas text-xl tracking-widest shadow-xl shadow-[#C9A84C]/20 active:scale-95 transition-all">TASDIQLASH</button>
+            </div>
+        </section>
+
+        <section id="chat" class="page-content">
+            <h2 class="text-3xl font-bebas mb-8 gold-gradient-text">ALOQA MARKAZI</h2>
+            <div class="space-y-4">
+                <div class="glass-card p-6 flex flex-col items-center text-center">
+                    <div class="w-20 h-20 rounded-full gold-bg flex items-center justify-center mb-4 shadow-xl shadow-[#C9A84C]/30">
+                        <img src="https://ui-avatars.com/api/?name=Azizjon+Barber&background=C9A84C&color=000" class="rounded-full">
+                    </div>
+                    <h3 class="text-2xl font-bebas">Azizjon Barber</h3>
+                    <p class="text-sm text-gray-500 mb-6">+ 998 99 753 82 20</p>
+                    <div class="flex gap-3 w-full">
+                        <button onclick="showPhoneModal()" class="flex-1 bg-[#C9A84C] text-black py-3 rounded-xl font-bold text-xs uppercase">QO'NG'IROQ</button>
+                        <a href="https://web.telegram.org/k/#1531135553" target="_blank" class="flex-1 border border-[#C9A84C] text-[#C9A84C] flex items-center justify-center py-3 rounded-xl font-bold text-xs uppercase">TELEGRAM</a>
+                    </div>
+                </div>
+                
+                <a href="https://t.me/mast1ff" class="glass-card p-5 flex items-center justify-between border-blue-500/20">
+                    <div class="flex items-center gap-4">
+                        <i class="fa-solid fa-code text-blue-400"></i>
+                        <div><p class="font-bold text-sm">Yaratuvchi</p><p class="text-[9px] text-gray-500 uppercase">Xato yoki Takliflar uchun</p></div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-xs"></i>
+                </a>
+            </div>
+        </section>
+
+        <section id="profile" class="page-content">
+            <div class="glass-card p-8 mb-6 text-center border-b-4 border-b-[#C9A84C]">
+                <div class="w-24 h-24 bg-white/5 rounded-full mx-auto mb-4 border-2 border-[#C9A84C] p-1">
+                    <div class="w-full h-full rounded-full bg-white/10 flex items-center justify-center text-3xl font-bold text-[#C9A84C]" id="avatar-char">M</div>
+                </div>
+                <h2 id="user-name-display" class="text-3xl font-bebas mb-1">MEHMON</h2>
+                <p id="user-phone-display" class="text-xs text-gray-500">+998 -- --- -- --</p>
+                <button onclick="editUserData()" class="text-[10px] text-[#C9A84C] uppercase font-bold mt-4 border-b border-[#C9A84C]/30">Tahrirlash</button>
+            </div>
+
+            <div id="active-booking-status" class="hidden glass-card p-6 border-green-500/40 mb-6 bg-green-500/5">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-[9px] bg-green-500 text-black px-2 py-1 rounded font-bold uppercase">Aktiv Navbat</span>
+                    <button onclick="confirmCancel()" class="text-red-500 text-xs font-bold uppercase"><i class="fa-solid fa-trash-can mr-1"></i> Bekor qilish</button>
+                </div>
+                <div id="booking-details" class="text-xl font-bebas tracking-wider">--</div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="glass-card p-5"><p class="text-[9px] text-gray-500 uppercase mb-2">Buyurtmalar</p><p class="text-3xl font-bebas" id="total-orders">0 ta</p></div>
+                <div class="glass-card p-5"><p class="text-[9px] text-gray-500 uppercase mb-2">Bonuslar</p><p class="text-3xl font-bebas text-[#C9A84C]">5 000</p></div>
+            </div>
+        </section>
+
+    </div>
+
+    <nav class="fixed bottom-6 left-6 right-6 h-20 glass-card bg-black/80 flex items-center justify-around px-2 z-[50] border-[#C9A84C]/30">
+        <button onclick="navigate('home')" id="n-home" class="flex flex-col items-center gap-1 transition-all"><i class="fa-solid fa-house text-xl"></i><span class="text-[8px] font-black uppercase">Home</span></button>
+        <button onclick="navigate('booking')" id="n-booking" class="flex flex-col items-center gap-1 transition-all"><i class="fa-solid fa-scissors text-xl"></i><span class="text-[8px] font-black uppercase">Navbat</span></button>
+        <button onclick="navigate('chat')" id="n-chat" class="flex flex-col items-center gap-1 transition-all"><i class="fa-solid fa-comments text-xl"></i><span class="text-[8px] font-black uppercase">Xabarlar</span></button>
+        <button onclick="navigate('profile')" id="n-profile" class="flex flex-col items-center gap-1 transition-all"><i class="fa-solid fa-user-tie text-xl"></i><span class="text-[8px] font-black uppercase">Hisob</span></button>
+    </nav>
+
+    <script>
+        const TOKEN = "8334790943:AAHb3_x5o1BTc_8RmGqyEldTxmw0ASXDseI";
+        const CHAT_ID = "6920504446";
+
+        let currentOrder = { service: '', day: '28-mart', time: '', duration: 25 };
+        let isSubbed = localStorage.getItem('subbed') === 'true';
+
+        window.onload = () => {
+            loadUserData();
+            generateCalendar();
+            navigate('home');
+            if(isSubbed) document.getElementById('sub-checker').style.display = 'none';
+        };
+
+        function setSub() { localStorage.setItem('subbed', 'true'); isSubbed = true; }
+
+        function checkBookingAccess() {
+            if(!isSubbed) {
+                openModal("OBUNA", "Navbat olish uchun avval Telegram kanalimizga a'zo bo'ling.", [{label: "OK", style: 'gold', action: closeModal}]);
+            } else { navigate('booking'); }
+        }
+
+        function navigate(id) {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.querySelectorAll('nav button').forEach(b => {
+                b.classList.replace('text-[#C9A84C]', 'text-gray-600');
+                b.style.transform = 'scale(1)';
+            });
+            const activeBtn = document.getElementById('n-' + id);
+            activeBtn.classList.replace('text-gray-600', 'text-[#C9A84C]');
+            activeBtn.style.transform = 'scale(1.1)';
+        }
+
+        function generateCalendar() {
+            const strip = document.getElementById('calendar-strip');
+            strip.innerHTML = '';
+            for(let i=28; i<=31; i++) {
+                const btn = document.createElement('div');
+                btn.className = `day-btn glass-card ${i===28 ? 'active' : ''}`;
+                btn.innerHTML = `<span class="text-[10px] opacity-60">MART</span><span class="text-2xl font-bebas">${i}</span>`;
+                btn.onclick = () => {
+                    document.querySelectorAll('.day-btn').forEach(d => d.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentOrder.day = i + '-mart';
+                };
+                strip.appendChild(btn);
+            }
+        }
+
+        function selectService(type, dur) {
+            currentOrder.service = type;
+            currentOrder.duration = dur;
+            document.getElementById('service-title').innerText = type + " VAQTI";
+            document.getElementById('booking-s1').classList.add('hidden');
+            document.getElementById('booking-s2').classList.remove('hidden');
+            renderTimeSlots();
+        }
+
+        function backToS1() {
+            document.getElementById('booking-s1').classList.remove('hidden');
+            document.getElementById('booking-s2').classList.add('hidden');
+        }
+
+        function renderTimeSlots() {
+            const grid = document.getElementById('time-grid');
+            grid.innerHTML = '';
+            for(let t=510, i=0; t<=1050; t+=25, i++) {
+                let h = Math.floor(t/60), m = t%60;
+                let tStr = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+                let slot = document.createElement('div');
+                slot.className = "time-slot glass-card p-3 text-center text-xs font-bold";
+                slot.innerText = tStr;
+                slot.onclick = () => handleTimeClick(slot, tStr, i);
+                
+                grid.appendChild(slot);
+            }
+        }
+
+        function handleTimeClick(el, time, index) {
+            document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+            el.classList.add('selected');
+            currentOrder.time = time;
+
+            if(currentOrder.service === 'VIP') {
+                const slots = document.querySelectorAll('.time-slot');
+                if(slots[index+1] && !slots[index+1].classList.contains('booked')) {
+                    slots[index+1].classList.add('selected');
+                    currentOrder.time = `${time} - ${slots[index+1].innerText}`;
+                }
+            }
+        }
+
+        async function finalProcess() {
+    if(!currentOrder.time) {
+        openModal("XATO", "Iltimos, vaqtni tanlang!", [{label: "XO'P", style: 'gray', action: closeModal}]);
+        return;
+    }
+
+    let nameInput = document.getElementById('user-name-input').value.trim();
+    let phoneInput = document.getElementById('user-phone-input').value.trim();
+
+    if(!nameInput || !phoneInput) {
+        openModal("XATO", "Tasdiqlashdan oldin ism va telefon raqamingizni kiriting!", [{label: "XO'P", style: 'gray', action: closeModal}]);
+        return;
+    }
+
+    localStorage.setItem('u_name', nameInput);
+    localStorage.setItem('u_phone', phoneInput);
+    loadUserData();
+
+    // --- MANA SHU QISMI RASMDAGIDEK XABAR TAYYORLAYDI ---
+    const KANAL_USERNAM_YOKI_ID = "https://t.me/aziz_barber_studio"; // Kanalingiz manzili
+
+    const msg = `✂️ *YANGI BUYURTMA*\n\n` +
+                `👤 - *Mijoz:* ${nameInput}\n` +
+                `📞 - *Telefon:* ${phoneInput}\n` +
+                `💈 - *Xizmat:* ${currentOrder.service} Paket\n` +
+                `📅 - *KUN:* ${currentOrder.day}\n` +
+                `⏰ - *Vaqt:* ${currentOrder.time}\n\n` +
+                `**AFSUSKI SAIT ORQALI SIZ QOLGANLAR TANLAGAN NAVBATNI KO'RA OLMAYSIZ. SHU SABABLI SIZ KANAL ORQALI O'ZINGIZNING BO'SHA VAQTINGIZ ORQALI BO'SH VAQTLARNI TANLAYSIZ**\n\n` +
+                `*EXTRA Ma'lumotlar* :\n` +
+                `- VIP paket orqali siz "BOTH" ya'ni ham **SOQOL VA SOCH OLISH** tanla olasiz\n` +
+                `- Pastda joylashgan hisobingiz orqali **BONUSGA** ega bo'lasiz va **BAND NAVBATINGIZNI** o'chira olasiz\n\n` +
+                `_Azizjon Barber Studio_`;
+
+        // O'zgaruvchilarni yangilaymiz
+const KANAL_ID = ""; // BU YERGA O'SHA RAQAMLI ID-NI YOZING (misol tariqasida)
+
+// ... (avvalgi kodlar)
+
+await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+        // MUHIM: Bu yerda CHAT_ID emas, KANAL_ID bo'lishi kerak!
+        chat_id: KANAL_ID, 
+        text: msg, 
+        parse_mode: 'Markdown'
+    })
+});
+    // ---------------------------------------------------
+
+    localStorage.setItem('active_booking', `${currentOrder.service} | ${currentOrder.day} | ${currentOrder.time}`);
+    
+    openModal("MUVAFFAQIYATLI", "Navbatingiz muvaffaqiyatli qabul qilindi!", [
+        {label: "OK", style: 'gold', action: () => { closeModal(); backToS1(); updateProfileUI(); }}
+    ]);
+}
+
+        // openModal funksiyasi innerHTML orqali matn yoki chiroyli inputlarni qabul qila oladigan bo'ldi
+        function openModal(title, textOrHTML, btns) {
+            const overlay = document.getElementById('modal-overlay');
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-text').innerHTML = textOrHTML;
+            
+            const container = document.getElementById('modal-actions');
+            container.innerHTML = '';
+            btns.forEach(b => {
+                const btn = document.createElement('button');
+                btn.className = `flex-1 py-3 rounded-xl font-bold text-[10px] uppercase ${b.style === 'gold' ? 'bg-[#C9A84C] text-black' : 'bg-white/10 text-white'}`;
+                btn.innerText = b.label;
+                btn.onclick = b.action;
+                container.appendChild(btn);
+            });
+            overlay.style.display = 'flex';
+        }
+
+        function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
+
+        // Qo'ng'iroq uchun chiroyli modal ko'rsatuvchi funksiya
+        function showPhoneModal() {
+            openModal(
+                "TELEFON RAQAM", 
+                "<p class='text-2xl font-bebas text-white tracking-widest my-4'>+998 99 753 82 20</p>", 
+                [
+                    {label: "YOPISH", style: 'gray', action: closeModal},
+                    {label: "QO'NG'IROQ", style: 'gold', action: () => { window.location.href = 'tel:+998997538220'; closeModal(); }}
+                ]
+            );
+        }
+
+        function loadUserData() {
+            const n = localStorage.getItem('u_name');
+            const p = localStorage.getItem('u_phone');
+            if(n) {
+                document.getElementById('user-name-display').innerText = n.toUpperCase();
+                document.getElementById('avatar-char').innerText = n[0].toUpperCase();
+                document.getElementById('user-phone-display').innerText = p;
+                
+                document.getElementById('user-name-input').value = n;
+                document.getElementById('user-phone-input').value = p;
+            }
+            updateProfileUI();
+        }
+
+        function updateProfileUI() {
+            const active = localStorage.getItem('active_booking');
+            const statusBox = document.getElementById('active-booking-status');
+            if(active) {
+                statusBox.classList.remove('hidden');
+                document.getElementById('booking-details').innerText = active;
+                document.getElementById('total-orders').innerText = "1 ta";
+            } else {
+                statusBox.classList.add('hidden');
+            }
+        }
+
+        function confirmCancel() {
+            openModal("BEKOR QILISH", "Haqiqatdan ham navbatni bekor qilmoqchimisiz?", [
+                {label: "YO'Q", style: 'gray', action: closeModal},
+                {label: "HA", style: 'gold', action: () => {
+                    localStorage.removeItem('active_booking');
+                    updateProfileUI();
+                    closeModal();
+                }}
+            ]);
+        }
+
+        // Tahrirlash tugmasi bosilganda xunuk prompt emas, chiroyli modal ochiladi
+        function editUserData() {
+            const currentName = localStorage.getItem('u_name') || '';
+            const currentPhone = localStorage.getItem('u_phone') || '';
+            
+            const inputsHTML = `
+                <div class="mt-4 mb-2">
+                    <input type="text" id="edit-name" value="${currentName}" placeholder="Yangi ism" class="w-full glass-card p-4 mb-3 bg-transparent border border-[#C9A84C]/30 focus:border-[#C9A84C] outline-none text-[#F5EDD8] rounded-xl">
+                    <input type="tel" id="edit-phone" value="${currentPhone}" placeholder="Yangi telefon" class="w-full glass-card p-4 bg-transparent border border-[#C9A84C]/30 focus:border-[#C9A84C] outline-none text-[#F5EDD8] rounded-xl">
+                </div>
+            `;
+            
+            openModal("PROFILNI TAHRIRLASH", inputsHTML, [
+                {label: "BEKOR QILISH", style: 'gray', action: closeModal},
+                {label: "SAQLASH", style: 'gold', action: saveEditedData}
+            ]);
+        }
+
+        function saveEditedData() {
+            const n = document.getElementById('edit-name').value.trim();
+            const p = document.getElementById('edit-phone').value.trim();
+            if(n && p) {
+                localStorage.setItem('u_name', n);
+                localStorage.setItem('u_phone', p);
+                loadUserData();
+                closeModal();
+            } else {
+                // Hech narsa yozilmasa, shunchaki modal yopiladi (alert chiqmaydi)
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
